@@ -66,7 +66,7 @@ app.post("/urls/:id/edit", (req, res) => {
   const id = req.params.id;
   urlDatabase[id] = req.body.id;
   res.redirect("/urls")
-})
+});
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL };
