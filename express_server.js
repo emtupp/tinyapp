@@ -10,6 +10,9 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -17,6 +20,11 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.post("/login", (req, res) => {
+  const user = req.body.username;
+  res.cookie('username', user);
+  res.redirect('/urls');
+});
 
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
@@ -48,7 +56,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
-});
+})
 
 app.post("/urls/:shortURL/delete", (req,res) => {
   const shortURL = req.params.shortURL;
@@ -58,7 +66,6 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
-  console.log("edit path attempt: ", urlDatabase)
   res.redirect(`/urls/${id}`);
 });
 
