@@ -21,14 +21,13 @@ const urlDatabase = {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(req.body);
   res.redirect(`/urls/${shortURL}`);
 });
 
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
-})
+});
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -55,6 +54,18 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect('/urls');
+});
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  console.log("edit path attempt: ", urlDatabase)
+  res.redirect(`/urls/${id}`);
+});
+
+app.post("/urls/:id/edit", (req, res) => {
+  const id = req.params.id;
+  urlDatabase[id] = req.body.id;
+  res.redirect("/urls")
 })
 
 app.get("/urls/:shortURL", (req, res) => {
