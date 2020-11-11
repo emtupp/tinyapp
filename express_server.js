@@ -28,19 +28,26 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  const user = req.cookies['user_id'];
-  res.cookie('user_id', user); // ************
-  res.redirect("/urls");
+  const {email, password} = req.body;
+  if (users === {}) {
+    return res.redirect('login')
+  }
+  for (let user in users) {
+    if (email === users[user].email) {
+      if (password === users[user].password) {
+        res.cookie('user_id', user);
+        return res.redirect("/urls");
+      }
+    }
+    res.status(403).send('eMail or password is invalid');
+    res.redirect('login');
+  }
 });
 
-// app.post("/register", (req, res) => {
-//   res.redirect('register');
-// });
-
-app.post("/logout", (req, res) => {
+app.get("/logout", (req, res) => {
   res.clearCookie('user_id');
   res.redirect('/urls');
-})
+});
 
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
@@ -103,18 +110,20 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/register", (req, res) => {
   const user = generateRandomString();
   if (req.body.email === '' || req.body.password === '') {
-    res.status(400).send('Please enter a valid email and password.');
+    return res.status(400).send('Please enter a valid email and password.');
   } else {
     for (let userIDs in users) {
       if (req.body.email === users[userIDs].email) {
-        res.status(400).send('This email is already in use.');
+        return res.status(400).send('This email is already in use.');
      }
     }
   }
   users[user] = {id: user, email: req.body.email, password: req.body.password};
+  console.log(users[user])
+  console.log('users is: ', users)
   res.cookie('user_id', user);
   res.redirect("/urls");
-});
+}); // ************
 
 app.get("/register", (req, res) => {
   const templateVars = {user_id: req.cookies["user_id"]};
