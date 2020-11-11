@@ -94,7 +94,16 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/register", (req, res) => {
   const user = generateRandomString();
   users[user] = {id: user, email: req.body.email, password: req.body.password};
-  console.log(users)
+  console.log('users is: ', users)
+  if (users[user].email === '' || users[user].password === '') {
+    res.send('BAD')
+    console.log('req.error is: ',req.error)
+  } else {
+    for (let userIDs in users) {
+      console.log('userIDs is: ', userIDs)
+      console.log('userIDs email: ', users[userIDs].email)
+    }
+  }
   res.cookie('user_id', user);
   res.redirect("/urls");
 })
