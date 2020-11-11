@@ -93,20 +93,19 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/register", (req, res) => {
   const user = generateRandomString();
-  users[user] = {id: user, email: req.body.email, password: req.body.password};
-  console.log('users is: ', users)
-  if (users[user].email === '' || users[user].password === '') {
-    res.send('BAD')
-    console.log('req.error is: ',req.error)
+  if (req.body.email === '' || req.body.password === '') {
+    res.status(400).send('Please enter a valid email and password.');
   } else {
     for (let userIDs in users) {
-      console.log('userIDs is: ', userIDs)
-      console.log('userIDs email: ', users[userIDs].email)
+      if (req.body.email === users[userIDs].email) {
+        res.status(400).send('This email is already in use.');
+     }
     }
   }
+  users[user] = {id: user, email: req.body.email, password: req.body.password};
   res.cookie('user_id', user);
   res.redirect("/urls");
-})
+});
 
 app.get("/register", (req, res) => {
   res.render("register");
