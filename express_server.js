@@ -1,15 +1,12 @@
 // REQUIREMENTS
 
-const { urlsForUser, generateRandomString /*, authenticateUser, fetchUser*/ } = require('./helpers');
+const { urlsForUser, generateRandomString, getUserByEmail } = require('./helpers');
 const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-
-// const password = "purple-monkey-dinosaur"; // found in the req.params object
-// const hashedPassword = bcrypt.hashSync(password, 10);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
@@ -51,10 +48,8 @@ app.post("/register", (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     return res.status(400).send('Please enter a valid email and password.');
   } else {
-    for (let userIDs in users) {
-      if (req.body.email === users[userIDs].email) {
-        return res.status(400).send('This email is already in use.');
-      }
+    if (getUserByEmail(req.body.email, users)) {
+      return res.status(400).send('eMail already in use.')
     }
   }
   users[user] = {
@@ -62,7 +57,6 @@ app.post("/register", (req, res) => {
      email: req.body.email,
      password: bcrypt.hashSync(req.body.password, 10)
     };
-    console.log(users[user])
   req.session.user_id = user;
   res.redirect("/urls");
 });
@@ -77,21 +71,12 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  if (users === {}) {
-    return res.redirect('login')
+  const user = getUserByEmail(email, users);
+  if (bcrypt.compareSync(password, users[user].password)) {
+    req.session.user_id = user;
+    res.redirect("/urls");
   }
-  for (let user in users) {
-    let validUser;
-    if (email === users[user].email) {
-      validUser = users[user];
-      if (bcrypt.compareSync(password, validUser.password)) {
-        
-        req.session.user_id = user;
-        res.redirect("/urls");
-      }
-    }
-  }
-  res.status(403).send('eMail or password is invalid');
+  res.status(403).send('eMail or password is invalid!');
 });
 
 

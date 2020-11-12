@@ -11,28 +11,15 @@ const urlsForUser = function(id, db) {
     }
   }
   return userUrlDb;
-}
+};
 
-// const authenticateUser = (db, email, password) => {
-//   for (const user of db) {
-//     if (user.email === email) {
-//       if (user.password === password) {
-//         return { error: null, user }
-//       } else {
-//         return { error: 'password', user: null }
-//       }
-//     }
-//   }
-//   return { error: 'email', user: null }
-// }
+const getUserByEmail = function(email, database) {
+  for (const user in database) {
+    if (database[user].email === email) {
+      return user;
+    }
+  }
+  return undefined;
+};
 
-// const fetchUser = (db, email) => {
-//   for (const user of db) {
-//     if (user.email === email) {
-//       return { error: null, user }
-//     }
-//   }
-//   return { error: 'email', user: null }
-// }
-
-module.exports = { urlsForUser, generateRandomString /*, authenticateUser, fetchUser*/ }
+module.exports = { urlsForUser, generateRandomString, getUserByEmail }
