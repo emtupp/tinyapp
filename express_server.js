@@ -1,6 +1,6 @@
 // REQUIREMENTS
 
-const { generateRandomString /*, authenticateUser, fetchUser*/ } = require('./helpers');
+const { urlsForUser, generateRandomString /*, authenticateUser, fetchUser*/ } = require('./helpers');
 const express = require("express");
 const app = express();
 const PORT = 8080;
@@ -103,8 +103,9 @@ app.get("/logout", (req, res) => {
 // ROUTES FROM /urls
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  templateVars.user_id = req.cookies['user_id'];
+
+  const templateVars = { user_id: req.cookies['user_id'] };
+  templateVars.urls = urlsForUser(templateVars.user_id, urlDatabase);
   res.render("urls_index", templateVars);
 });
 

@@ -3,6 +3,18 @@ const generateRandomString = function() {
   return formOutput;
 };
 
+const urlsForUser = function(id, db) {
+  let userUrlDb = {};
+  console.log('db is: ', db)
+  for (let item in db) {
+    if (id === db[item].userID) {
+      userUrlDb[item] = db[item];
+    }
+  }
+  console.log(userUrlDb)
+  return userUrlDb;
+}
+
 // const authenticateUser = (db, email, password) => {
 //   for (const user of db) {
 //     if (user.email === email) {
@@ -24,4 +36,5 @@ const generateRandomString = function() {
 //   }
 //   return { error: 'email', user: null }
 // }
-module.exports = { generateRandomString /*, authenticateUser, fetchUser*/ }
+
+module.exports = { urlsForUser, generateRandomString /*, authenticateUser, fetchUser*/ }
