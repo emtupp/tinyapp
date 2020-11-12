@@ -34,6 +34,9 @@ const urlDatabase = {
 };
 
 
+// HEADER NEED TO BE CHANGED TO SHOW EMAIL
+
+
 // SERVER SETUP
 
 app.listen(PORT, () => {
@@ -60,8 +63,8 @@ app.post("/register", (req, res) => {
     }
   }
   users[user] = { id: user, email: req.body.email, password: req.body.password };
-  console.log(users[user])
-  console.log('users is: ', users)
+  // console.log(users[user])
+  // console.log('users is: ', users)
   res.cookie('user_id', user);
   res.redirect("/urls");
 });
@@ -110,9 +113,33 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// edits current short URL and changes assiciated long URL
+app.post("/urls/:id/edit", (req, res) => {
+  const foundUserID = req.cookies["user_id"];
+  const foundUser = users[foundUserID].id;
+  const id = req.params.id;
+  const userAccess = urlDatabase[id].userID;
+  if (foundUserID && foundUser) {
+    if (foundUser === userAccess) {
+      urlDatabase[id].longURL = req.body.id;
+      res.redirect("/urls")
+    }
+  }
+  res.redirect('/urls')
+});
+
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const foundUserID = req.cookies["user_id"];
+  const foundUser = users[foundUserID].id;
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
+  const userAccess = urlDatabase[shortURL].userID;
+  if (foundUserID && foundUser) {
+    if (foundUser === userAccess) {
+      const shortURL = req.params.shortURL;
+      delete urlDatabase[shortURL];
+      res.redirect('/urls')
+    }
+  }
   res.redirect('/urls');
 });
 
@@ -123,7 +150,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = { user_id: req.cookies["user_id"] };
   if (!templateVars.user_id) {
-    console.log(templateVars.user_id);
+    // console.log(templateVars.user_id);
     return res.redirect("/login");
   }
   res.render("urls_new", templateVars);
@@ -133,7 +160,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
   urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies['user_id'] };
-  console.log(urlDatabase)
+  // console.log(urlDatabase)
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -152,13 +179,6 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   res.redirect(`/urls/${id}`);
-});
-
-// edits current short URL and changes assiciated long URL
-app.post("/urls/:id/edit", (req, res) => {
-  const id = req.params.id;
-  urlDatabase[id] = req.body.id;
-  res.redirect("/urls")
 });
 
 // opens long URL using short URL hyperlink
