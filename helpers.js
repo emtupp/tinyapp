@@ -5,13 +5,11 @@ const generateRandomString = function() {
 
 const urlsForUser = function(id, db) {
   let userUrlDb = {};
-  console.log('db is: ', db)
   for (let item in db) {
     if (id === db[item].userID) {
       userUrlDb[item] = db[item];
     }
   }
-  console.log(userUrlDb)
   return userUrlDb;
 }
 

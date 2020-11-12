@@ -80,15 +80,17 @@ app.post("/login", (req, res) => {
     return res.redirect('login')
   }
   for (let user in users) {
+    let validUser;
     if (email === users[user].email) {
-      if (password === users[user].password) {
+      validUser = users[user];
+      if (password === validUser.password) {
+        
         res.cookie('user_id', user);
-        return res.redirect("/urls");
+        res.redirect("/urls");
       }
     }
-    res.status(403).send('eMail or password is invalid');
-    res.redirect('login');
   }
+  res.status(403).send('eMail or password is invalid');
 });
 
 
@@ -103,7 +105,6 @@ app.get("/logout", (req, res) => {
 // ROUTES FROM /urls
 
 app.get("/urls", (req, res) => {
-
   const templateVars = { user_id: req.cookies['user_id'] };
   templateVars.urls = urlsForUser(templateVars.user_id, urlDatabase);
   res.render("urls_index", templateVars);
