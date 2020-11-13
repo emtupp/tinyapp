@@ -47,7 +47,7 @@ app.post("/register", (req, res) => {
   const templateVars = { user: null };
   const userID = generateRandomString();
   if (req.body.email === '' || req.body.password === '') {
-    res.render('register_error', templateVars);
+    res.render('register_empty', templateVars);
   } else {
     if (getUserByEmail(req.body.email, users)) {
       res.render("register_error", templateVars);
@@ -71,13 +71,14 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
+  const templateVars = { user: null }
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   if (bcrypt.compareSync(password, users[user].password)) {
     req.session.user_id = user;
     res.redirect("/urls");
   }
-  res.status(403).send('eMail or password is invalid!');
+  res.render("wronglogin", templateVars);
 });
 
 // USER LOGOUT
@@ -102,6 +103,11 @@ app.get("/urls", (req, res) => {
 
 // edits current short URL and changes assiciated long URL
 app.post("/urls/:id/edit", (req, res) => {
+  const user = users[req.session.user_id];
+  const templateVars = { user };
+  if (!user) {
+    res.render("error_login", templateVars)
+  }
   const foundUserID = req.session.user_id;
   const foundUser = users[foundUserID].id;
   const id = req.params.id;
@@ -112,7 +118,7 @@ app.post("/urls/:id/edit", (req, res) => {
       res.redirect("/urls")
     }
   }
-  res.redirect('/urls')
+  res.render("notyours", templateVars)
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -182,10 +188,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/u/:id", (req, res) => {
-  const thisWebsite = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(thisWebsite);
-}); // ******
 
 
 // OTHER ROUTES
