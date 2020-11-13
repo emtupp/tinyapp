@@ -26,7 +26,6 @@ const users = {}
 const urlDatabase = {};
 
 
-// HEADER NEED TO BE CHANGED TO SHOW EMAIL
 
 
 // SERVER SETUP
@@ -39,26 +38,27 @@ app.listen(PORT, () => {
 // REGISTER NEW USER
 
 app.get("/register", (req, res) => {
-  const templateVars = { user_id: req.session.user_id };
+  const user = users[req.session.user_id];
+  const templateVars = { user };
   res.render("register", templateVars);
 });
 
 app.post("/register", (req, res) => {
-  const user = generateRandomString();
+  const templateVars = { user: null };
+  const userID = generateRandomString();
   if (req.body.email === '' || req.body.password === '') {
-    return res.status(400).send('Please enter a valid email and password.');
+    res.render('register_error', templateVars);
   } else {
     if (getUserByEmail(req.body.email, users)) {
-      return res.status(400).send('eMail already in use.')
+      res.render("register_error", templateVars);
     }
   }
-  users[user] = {
-     id: user,
+  users[userID] = {
+     id: userID,
      email: req.body.email,
      password: bcrypt.hashSync(req.body.password, 10)
     };
-  req.session.user_id = user;
-  console.log('users are: ', users)
+  req.session.user_id = userID;
   res.redirect("/urls");
 });
 
@@ -66,7 +66,7 @@ app.post("/register", (req, res) => {
 // USER LOGIN
 
 app.get("/login", (req, res) => {
-  const templateVars = { user_id: req.session.user_id };
+  const templateVars = { user: null };
   res.render("login", templateVars);
 })
 
@@ -80,7 +80,6 @@ app.post("/login", (req, res) => {
   res.status(403).send('eMail or password is invalid!');
 });
 
-
 // USER LOGOUT
 
 app.get("/logout", (req, res) => {
@@ -92,8 +91,12 @@ app.get("/logout", (req, res) => {
 // ROUTES FROM /urls
 
 app.get("/urls", (req, res) => {
-  const templateVars = { user_id: req.session.user_id };
-  templateVars.urls = urlsForUser(templateVars.user_id, urlDatabase);
+  const user = users[req.session.user_id];
+  const urls = urlsForUser(req.session.user_id, urlDatabase);
+  const templateVars = { user, urls };
+  if (!user) {
+    res.redirect("/login_error")
+  }
   res.render("urls_index", templateVars);
 });
 
@@ -132,9 +135,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // opens new URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user_id: req.session.user_id };
-  if (!templateVars.user_id) {
-    // console.log(templateVars.user_id);
+  const user = users[req.session.user_id];
+  const templateVars = { user };
+  if (!user) {
     return res.redirect("/login");
   }
   res.render("urls_new", templateVars);
@@ -144,16 +147,15 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
   urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id };
-  // console.log(urlDatabase)
   res.redirect(`/urls/${shortURL}`);
 });
 
 // path to short URL page
 app.get("/urls/:shortURL", (req, res) => {
-  const user_id = req.session.user_id
+  const user = users[req.session.user_id];
   const shortURL = req.params.shortURL;
   const templateVars = {
-    user_id,
+    user,
     shortURL,
     longURL: urlDatabase[shortURL].longURL
   };
@@ -161,15 +163,30 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  const id = req.params.id;
-  res.redirect(`/urls/${id}`);
+  const foundUserID = req.session.user_id;
+  const foundUser = users[foundUserID].id;
+  const shortURL = req.params.shortURL;
+  const userAccess = urlDatabase[shortURL].userID;
+  if (foundUserID && foundUser) {
+    if (foundUser === userAccess) {
+      const id = req.params.id;
+      res.redirect(`/urls/${id}`);
+    }
+  }
+  res.send("<html><body>You do not own this TinyURL</body></html>\n")
 });
 
 // opens long URL using short URL hyperlink
 app.get("/u/:shortURL", (req, res) => {
-  longURL = urlDatabase[req.params.shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
+
+app.get("/u/:id", (req, res) => {
+  const thisWebsite = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(thisWebsite);
+}); // ******
+
 
 // OTHER ROUTES
 
@@ -179,9 +196,19 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const user = users[req.session.user_id];
+  if (!user) {
+    res.redirect('/login')
+  }
+  res.redirect('/urls')
 });
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+// error: not logged in
+app.get("/login_error", (req, res) => {
+  const templateVars = { user: null };
+  res.render("error_login", templateVars)
+})
