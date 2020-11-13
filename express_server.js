@@ -21,7 +21,7 @@ app.set("view engine", "ejs");
 
 // DATABASE
 
-const users = {}
+const users = {};
 
 const urlDatabase = {};
 
@@ -40,7 +40,10 @@ app.listen(PORT, () => {
 app.get("/register", (req, res) => {
   const user = users[req.session.user_id];
   const templateVars = { user };
-  res.render("register", templateVars);
+  if (!user) {
+    res.render("register", templateVars);
+  }
+  res.redirect("/urls");
 });
 
 app.post("/register", (req, res) => {
@@ -66,12 +69,16 @@ app.post("/register", (req, res) => {
 // USER LOGIN
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: null };
-  res.render("login", templateVars);
-})
+  const user = users[req.session.user_id];
+  const templateVars = { user };
+  if (!user) {
+    res.render("login", templateVars);
+  }
+  res.redirect("/urls");
+});
 
 app.post("/login", (req, res) => {
-  const templateVars = { user: null }
+  const templateVars = { user: null };
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   if (bcrypt.compareSync(password, users[user].password)) {
@@ -96,7 +103,7 @@ app.get("/urls", (req, res) => {
   const urls = urlsForUser(req.session.user_id, urlDatabase);
   const templateVars = { user, urls };
   if (!user) {
-    res.redirect("/login_error")
+    res.redirect("/login_error");
   }
   res.render("urls_index", templateVars);
 });
@@ -106,7 +113,7 @@ app.post("/urls/:id/edit", (req, res) => {
   const user = users[req.session.user_id];
   const templateVars = { user };
   if (!user) {
-    res.render("error_login", templateVars)
+    res.render("error_login", templateVars);
   }
   const foundUserID = req.session.user_id;
   const foundUser = users[foundUserID].id;
@@ -115,10 +122,10 @@ app.post("/urls/:id/edit", (req, res) => {
   if (foundUserID && foundUser) {
     if (foundUser === userAccess) {
       urlDatabase[id].longURL = req.body.id;
-      res.redirect("/urls")
+      res.redirect("/urls");
     }
   }
-  res.render("notyours", templateVars)
+  res.render("notyours", templateVars);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -130,7 +137,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     if (foundUser === userAccess) {
       const shortURL = req.params.shortURL;
       delete urlDatabase[shortURL];
-      res.redirect('/urls')
+      res.redirect('/urls');
     }
   }
   res.redirect('/urls');
@@ -151,7 +158,7 @@ app.get("/urls/new", (req, res) => {
 
 // creates new short URL and upens short URL page
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString()
+  const shortURL = generateRandomString();
   urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id };
   res.redirect(`/urls/${shortURL}`);
 });
@@ -165,21 +172,15 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL,
     longURL: urlDatabase[shortURL].longURL
   };
+  if (!user) {
+    res.render("error_login", templateVars);
+  }
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/:id", (req, res) => {
-  const foundUserID = req.session.user_id;
-  const foundUser = users[foundUserID].id;
-  const shortURL = req.params.shortURL;
-  const userAccess = urlDatabase[shortURL].userID;
-  if (foundUserID && foundUser) {
-    if (foundUser === userAccess) {
-      const id = req.params.id;
-      res.redirect(`/urls/${id}`);
-    }
-  }
-  res.send("<html><body>You do not own this TinyURL</body></html>\n")
+  const id = req.params.id;
+  res.redirect(`/urls/${id}`);
 });
 
 // opens long URL using short URL hyperlink
@@ -200,9 +201,9 @@ app.get("/urls.json", (req, res) => {
 app.get("/", (req, res) => {
   const user = users[req.session.user_id];
   if (!user) {
-    res.redirect('/login')
+    res.redirect('/login');
   }
-  res.redirect('/urls')
+  res.redirect('/urls');
 });
 
 app.get("/hello", (req, res) => {
@@ -212,5 +213,5 @@ app.get("/hello", (req, res) => {
 // error: not logged in
 app.get("/login_error", (req, res) => {
   const templateVars = { user: null };
-  res.render("error_login", templateVars)
-})
+  res.render("error_login", templateVars);
+});

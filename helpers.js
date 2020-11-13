@@ -22,4 +22,4 @@ const getUserByEmail = function(email, database) {
   return undefined;
 };
 
-module.exports = { urlsForUser, generateRandomString, getUserByEmail }
+module.exports = { urlsForUser, generateRandomString, getUserByEmail };

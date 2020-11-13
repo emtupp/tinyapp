@@ -9,7 +9,7 @@ describe('#getUserByEmail', () => {
       { id: 'thisID',
         email: 'thisguy@tinytim.com'
       }};
-    const expectedUser = 'Alice'
+    const expectedUser = 'Alice';
     assert.equal(expectedUser, getUserByEmail('thisguy@tinytim.com', userDB));
   });
   it('returns undefined when user doesn\'t exist in database', () => {
@@ -18,14 +18,14 @@ describe('#getUserByEmail', () => {
       { id: 'thisID',
         email: 'thisguy@tinytim.com'
       }};
-    const expectedOutput = undefined
+    const expectedOutput = undefined;
     assert.equal(expectedOutput, getUserByEmail('bobthebuilder@building.com'));
-  })
+  });
   it('returns undefined when the database is empty', () => {
     const userDB = {};
     const expectedOutput = undefined;
     assert.equal(expectedOutput, getUserByEmail('anemail@email.com'));
-  })
+  });
 });
 
 describe('#urlsForUser', () => {
@@ -44,7 +44,7 @@ describe('#urlsForUser', () => {
         longURL: 'dadjokes.com'
       }
     };
-    const expectedOutput = { 
+    const expectedOutput = {
       uuuuu:
       { userID: 'thisID',
         longURL: 'website.com'
